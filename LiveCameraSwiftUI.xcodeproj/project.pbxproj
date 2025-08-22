@@ -3,27 +3,25 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		6362F5F7287974D000286B4A /* LiveCameraSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6362F5F6287974D000286B4A /* LiveCameraSwiftUIApp.swift */; };
-		6362F5F9287974D000286B4A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6362F5F8287974D000286B4A /* ContentView.swift */; };
 		6362F5FB287974D000286B4A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6362F5FA287974D000286B4A /* Assets.xcassets */; };
 		6362F5FE287974D000286B4A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6362F5FD287974D000286B4A /* Preview Assets.xcassets */; };
-		6362F6412879C49500286B4A /* FrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6362F6402879C49500286B4A /* FrameView.swift */; };
-		6362F6432879C76400286B4A /* FrameHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6362F6422879C76400286B4A /* FrameHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		6362F5F3287974D000286B4A /* LiveCameraSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiveCameraSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6362F5F6287974D000286B4A /* LiveCameraSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCameraSwiftUIApp.swift; sourceTree = "<group>"; };
-		6362F5F8287974D000286B4A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6362F5FA287974D000286B4A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6362F5FD287974D000286B4A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		6362F6402879C49500286B4A /* FrameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameView.swift; sourceTree = "<group>"; };
-		6362F6422879C76400286B4A /* FrameHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F411340B2E58C8B300F003F1 /* CameraFrame */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CameraFrame; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		6362F5F0287974D000286B4A /* Frameworks */ = {
@@ -55,10 +53,8 @@
 		6362F5F5287974D000286B4A /* LiveCameraSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				F411340B2E58C8B300F003F1 /* CameraFrame */,
 				6362F5F6287974D000286B4A /* LiveCameraSwiftUIApp.swift */,
-				6362F5F8287974D000286B4A /* ContentView.swift */,
-				6362F6402879C49500286B4A /* FrameView.swift */,
-				6362F6422879C76400286B4A /* FrameHandler.swift */,
 				6362F5FA287974D000286B4A /* Assets.xcassets */,
 				6362F5FC287974D000286B4A /* Preview Content */,
 			);
@@ -87,6 +83,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F411340B2E58C8B300F003F1 /* CameraFrame */,
 			);
 			name = LiveCameraSwiftUI;
 			productName = LiveCameraSwiftUI;
@@ -143,9 +142,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6362F6412879C49500286B4A /* FrameView.swift in Sources */,
-				6362F5F9287974D000286B4A /* ContentView.swift in Sources */,
-				6362F6432879C76400286B4A /* FrameHandler.swift in Sources */,
 				6362F5F7287974D000286B4A /* LiveCameraSwiftUIApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -203,7 +199,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -257,7 +253,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -273,10 +269,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"LiveCameraSwiftUI/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 3FG3M2WXXK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera required for preview";
@@ -285,11 +281,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikwir;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -304,10 +302,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"LiveCameraSwiftUI/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 3FG3M2WXXK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera required for preview";
@@ -316,11 +314,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikwir;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
