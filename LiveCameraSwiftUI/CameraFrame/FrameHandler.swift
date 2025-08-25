@@ -10,14 +10,19 @@ class FrameHandler: NSObject, ObservableObject {
     private let sessionQueue = DispatchQueue(label: "sessionQueue")
     private let context = CIContext()
     
-    // Create a single VNRequest handler
+    // Create a single VNRequest handler and a lazy seg request
     private let visionQueue = DispatchQueue(label: "visionQueue")
+    private lazy var personSegmentationRequest: VNGeneratePersonSegmentationRequest = {
+        let request =  VNGeneratePersonSegmentationRequest()
+        request.qualityLevel = .balanced
+        return request
+    }()
 
     override init() {
         super.init()
-        
         self.checkPermission()
-        sessionQueue.async { [unowned self] in
+        sessionQueue.async { [weak self] in
+            guard let self = self else { return }
             self.setupCaptureSession()
             self.captureSession.startRunning()
         }
@@ -35,8 +40,8 @@ class FrameHandler: NSObject, ObservableObject {
     }
     
     private func requestPermission() {
-        AVCaptureDevice.requestAccess(for: .video) { [unowned self] granted in
-            self.permissionGranted = granted
+        AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+            self?.permissionGranted = granted
         }
     }
     
@@ -49,7 +54,8 @@ class FrameHandler: NSObject, ObservableObject {
         guard captureSession.canAddInput(videoDeviceInput) else { return }
         captureSession.addInput(videoDeviceInput)
         
-        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "sampleBufferQueue"))
+        videoOutput.setSampleBufferDelegate(self, queue: visionQueue)
+        videoOutput.alwaysDiscardsLateVideoFrames = true
         captureSession.addOutput(videoOutput)
         
         videoOutput.connection(with: .video)?.videoRotationAngle = 90.0
@@ -58,20 +64,24 @@ class FrameHandler: NSObject, ObservableObject {
 
 extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard let cgImage = imageFromSampleBuffer(sampleBuffer: sampleBuffer) else { return }
+        guard let image = imageFromSampleBuffer(sampleBuffer: sampleBuffer) else { return }
+        let processedImage = self.postProcessFrame(frame: image)
         
-        let processedImage = self.postProcessFrame(frame: cgImage)
-        DispatchQueue.main.async {
-            self.frame = processedImage
+        // Render the bitmap
+        let renderedImage = context.createCGImage(processedImage, from: processedImage.extent)!
+        DispatchQueue.main.async { [weak self] in
+            self?.frame = renderedImage
         }
     }
     
-    private func imageFromSampleBuffer(sampleBuffer: CMSampleBuffer) -> CGImage? {
-        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return nil }
-        let ciImage = CIImage(cvPixelBuffer: imageBuffer)
-        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return nil }
+    private func imageFromSampleBuffer(sampleBuffer: CMSampleBuffer) -> CIImage? {
+        let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
+        let attachments = CMCopyDictionaryOfAttachments(allocator: kCFAllocatorDefault,
+                                                        target: imageBuffer,
+                                                        attachmentMode: CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)) as? [CIImageOption: Any]
+        let ciImage = CIImage(cvPixelBuffer: imageBuffer, options: attachments)
         
-        return cgImage
+        return ciImage
     }
     
     private func applyZoomBlur(image: CIImage) -> CIImage {
@@ -97,32 +107,25 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         return additionCompositeFilter.outputImage ?? originalImage
     }
 
-    private func postProcessFrame(frame: CGImage) -> CGImage {
-        let handler = VNImageRequestHandler(cgImage: frame)
+    private func postProcessFrame(frame: CIImage) -> CIImage {
+        let handler = VNImageRequestHandler(ciImage: frame)
         
         do {
-            // Currently leaving it like this due to concurrency problems of unknown source
-            // Later it might be worth checking whether the requests can be initialised once
-            // For now let's not optimize prematurely.
-            let personSegmentationRequest = VNGeneratePersonSegmentationRequest()
-            personSegmentationRequest.qualityLevel = .balanced
             try handler.perform([personSegmentationRequest])
             
             guard let mask = personSegmentationRequest.results?.first?.pixelBuffer else {
                 return frame
             }
 
-            let originalCIImage = CIImage(cgImage: frame)
+            let originalCIImage = frame
             var maskCIImage = CIImage(cvPixelBuffer: mask)
             
             maskCIImage = transformMaskToFitOriginal(mask: maskCIImage, originalExtent: originalCIImage.extent)
             maskCIImage = applyZoomBlur(image: maskCIImage)
             
             let compositeImage = compositeMaskAndOriginalImage(mask: maskCIImage, originalImage: originalCIImage)
-            
-            
-            let returnImage = context.createCGImage(compositeImage, from: originalCIImage.extent)!
-            return returnImage
+
+            return compositeImage
             
         } catch {
             print("Vision request failed: \(error)")
