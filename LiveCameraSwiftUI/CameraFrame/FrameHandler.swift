@@ -16,7 +16,6 @@ class FrameHandler: NSObject, ObservableObject {
     override init() {
         super.init()
         
-        
         self.checkPermission()
         sessionQueue.async { [unowned self] in
             self.setupCaptureSession()
@@ -75,23 +74,27 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         return cgImage
     }
     
+    private func applyZoomBlur(image: CIImage) -> CIImage {
+        let zoomBlurFilter = CIFilter.zoomBlur()
+        zoomBlurFilter.inputImage = image
+        zoomBlurFilter.center = CGPoint(x: image.extent.midX, y: image.extent.midY)
+        zoomBlurFilter.amount = 10
+
+        return zoomBlurFilter.outputImage ?? image
+    }
+    
     private func transformMaskToFitOriginal(mask: CIImage, originalExtent: CGRect) -> CIImage {
         let maskScaleX = originalExtent.width / mask.extent.width
         let maskScaleY = originalExtent.height / mask.extent.height
         return mask.transformed(by: .init(scaleX: maskScaleX, y: maskScaleY))
     }
     
-    private func compositeMaskAndOriginalImage(mask: CIImage, originalImage: CIImage) -> CGImage {
+    private func compositeMaskAndOriginalImage(mask: CIImage, originalImage: CIImage) -> CIImage {
         let additionCompositeFilter = CIFilter.additionCompositing()
         additionCompositeFilter.inputImage = originalImage
         additionCompositeFilter.backgroundImage = mask
         
-        if let output = additionCompositeFilter.outputImage {
-            let ret = context.createCGImage(output, from: originalImage.extent)!
-            return ret
-        } else {
-            return context.createCGImage(originalImage, from: originalImage.extent)!
-        }
+        return additionCompositeFilter.outputImage ?? originalImage
     }
 
     private func postProcessFrame(frame: CGImage) -> CGImage {
@@ -113,7 +116,14 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
             var maskCIImage = CIImage(cvPixelBuffer: mask)
             
             maskCIImage = transformMaskToFitOriginal(mask: maskCIImage, originalExtent: originalCIImage.extent)
-            return compositeMaskAndOriginalImage(mask: maskCIImage, originalImage: originalCIImage)
+            maskCIImage = applyZoomBlur(image: maskCIImage)
+            
+            let compositeImage = compositeMaskAndOriginalImage(mask: maskCIImage, originalImage: originalCIImage)
+            
+            
+            let returnImage = context.createCGImage(compositeImage, from: originalCIImage.extent)!
+            return returnImage
+            
         } catch {
             print("Vision request failed: \(error)")
             return frame
