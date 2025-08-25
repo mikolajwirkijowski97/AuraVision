@@ -10,7 +10,7 @@ class FrameHandler: NSObject, ObservableObject {
     private let sessionQueue = DispatchQueue(label: "sessionQueue")
     private let context = CIContext()
     
-    // Create a single VNRequest handler and a single request to reuse
+    // Create a single VNRequest handler
     private let visionQueue = DispatchQueue(label: "visionQueue")
 
     override init() {
@@ -24,7 +24,7 @@ class FrameHandler: NSObject, ObservableObject {
         }
     }
     
-    func checkPermission() {
+    private func checkPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             self.permissionGranted = true
@@ -35,13 +35,13 @@ class FrameHandler: NSObject, ObservableObject {
         }
     }
     
-    func requestPermission() {
+    private func requestPermission() {
         AVCaptureDevice.requestAccess(for: .video) { [unowned self] granted in
             self.permissionGranted = granted
         }
     }
     
-    func setupCaptureSession() {
+    private func setupCaptureSession() {
         let videoOutput = AVCaptureVideoDataOutput()
         
         guard permissionGranted else { return }
@@ -57,9 +57,8 @@ class FrameHandler: NSObject, ObservableObject {
     }
 }
 
-
 extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let cgImage = imageFromSampleBuffer(sampleBuffer: sampleBuffer) else { return }
         
         let processedImage = self.postProcessFrame(frame: cgImage)
@@ -76,13 +75,13 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         return cgImage
     }
     
-    func transformMaskToFitOriginal(mask: CIImage, originalExtent: CGRect) -> CIImage {
+    private func transformMaskToFitOriginal(mask: CIImage, originalExtent: CGRect) -> CIImage {
         let maskScaleX = originalExtent.width / mask.extent.width
         let maskScaleY = originalExtent.height / mask.extent.height
         return mask.transformed(by: .init(scaleX: maskScaleX, y: maskScaleY))
     }
     
-    func compositeMaskAndOriginalImage(mask: CIImage, originalImage: CIImage) -> CGImage {
+    private func compositeMaskAndOriginalImage(mask: CIImage, originalImage: CIImage) -> CGImage {
         let additionCompositeFilter = CIFilter.additionCompositing()
         additionCompositeFilter.inputImage = originalImage
         additionCompositeFilter.backgroundImage = mask
@@ -98,15 +97,15 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
     private func postProcessFrame(frame: CGImage) -> CGImage {
         let handler = VNImageRequestHandler(cgImage: frame)
         
-        let personSegmentationRequest = VNGeneratePersonSegmentationRequest()
-        // Configure the Vision request once
-        personSegmentationRequest.qualityLevel = .balanced
         do {
+            // Currently leaving it like this due to concurrency problems of unknown source
+            // Later it might be worth checking whether the requests can be initialised once
+            // For now let's not optimize prematurely.
+            let personSegmentationRequest = VNGeneratePersonSegmentationRequest()
+            personSegmentationRequest.qualityLevel = .balanced
             try handler.perform([personSegmentationRequest])
-
+            
             guard let mask = personSegmentationRequest.results?.first?.pixelBuffer else {
-                // If no mask is found, return the original frame
-                print("Returning original frame")
                 return frame
             }
 
@@ -116,7 +115,6 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
             maskCIImage = transformMaskToFitOriginal(mask: maskCIImage, originalExtent: originalCIImage.extent)
             return compositeMaskAndOriginalImage(mask: maskCIImage, originalImage: originalCIImage)
         } catch {
-            // If any errors occur, just return the original frame
             print("Vision request failed: \(error)")
             return frame
         }
