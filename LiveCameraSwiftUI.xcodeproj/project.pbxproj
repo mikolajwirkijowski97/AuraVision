@@ -21,6 +21,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F411340B2E58C8B300F003F1 /* CameraFrame */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CameraFrame; sourceTree = "<group>"; };
+		F43D116D2E5CC23100D367B8 /* PostProcessingPipeline */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PostProcessingPipeline; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +54,7 @@
 		6362F5F5287974D000286B4A /* LiveCameraSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				F43D116D2E5CC23100D367B8 /* PostProcessingPipeline */,
 				F411340B2E58C8B300F003F1 /* CameraFrame */,
 				6362F5F6287974D000286B4A /* LiveCameraSwiftUIApp.swift */,
 				6362F5FA287974D000286B4A /* Assets.xcassets */,
@@ -86,6 +88,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				F411340B2E58C8B300F003F1 /* CameraFrame */,
+				F43D116D2E5CC23100D367B8 /* PostProcessingPipeline */,
 			);
 			name = LiveCameraSwiftUI;
 			productName = LiveCameraSwiftUI;

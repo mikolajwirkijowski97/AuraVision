@@ -1,7 +1,7 @@
 import Vision
-import AVFoundation
 import CoreImage
-import CoreImage.CIFilterBuiltins
+import AVFoundation
+
 
 class FrameHandler: NSObject, ObservableObject {
     @Published var frame: CGImage?
@@ -10,14 +10,16 @@ class FrameHandler: NSObject, ObservableObject {
     private let sessionQueue = DispatchQueue(label: "sessionQueue")
     private let context = CIContext()
     
-    // Create a single VNRequest handler and a lazy seg request
+    // Create a single VNRequest handler
     private let visionQueue = DispatchQueue(label: "visionQueue")
-    private lazy var personSegmentationRequest: VNGeneratePersonSegmentationRequest = {
-        let request =  VNGeneratePersonSegmentationRequest()
-        request.qualityLevel = .balanced
-        return request
+    
+    // The pipeline for image post-processing
+    lazy var postProcessingPipeline: PostProcessingPipeline = {
+        var effects = [ZoomBlur(intensity: 10)]
+        
+        return PostProcessingPipeline(effects: effects)
     }()
-
+    
     override init() {
         super.init()
         self.checkPermission()
@@ -65,9 +67,9 @@ class FrameHandler: NSObject, ObservableObject {
 extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let image = imageFromSampleBuffer(sampleBuffer: sampleBuffer) else { return }
-        let processedImage = self.postProcessFrame(frame: image)
+        let processedImage = postProcessingPipeline.apply(to: image)
         
-        // Render the bitmap
+        // Render processed image to a bitmap
         let renderedImage = context.createCGImage(processedImage, from: processedImage.extent)!
         DispatchQueue.main.async { [weak self] in
             self?.frame = renderedImage
@@ -82,54 +84,5 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         let ciImage = CIImage(cvPixelBuffer: imageBuffer, options: attachments)
         
         return ciImage
-    }
-    
-    private func applyZoomBlur(image: CIImage) -> CIImage {
-        let zoomBlurFilter = CIFilter.zoomBlur()
-        zoomBlurFilter.inputImage = image
-        zoomBlurFilter.center = CGPoint(x: image.extent.midX, y: image.extent.midY)
-        zoomBlurFilter.amount = 10
-
-        return zoomBlurFilter.outputImage ?? image
-    }
-    
-    private func transformMaskToFitOriginal(mask: CIImage, originalExtent: CGRect) -> CIImage {
-        let maskScaleX = originalExtent.width / mask.extent.width
-        let maskScaleY = originalExtent.height / mask.extent.height
-        return mask.transformed(by: .init(scaleX: maskScaleX, y: maskScaleY))
-    }
-    
-    private func compositeMaskAndOriginalImage(mask: CIImage, originalImage: CIImage) -> CIImage {
-        let additionCompositeFilter = CIFilter.additionCompositing()
-        additionCompositeFilter.inputImage = originalImage
-        additionCompositeFilter.backgroundImage = mask
-        
-        return additionCompositeFilter.outputImage ?? originalImage
-    }
-
-    private func postProcessFrame(frame: CIImage) -> CIImage {
-        let handler = VNImageRequestHandler(ciImage: frame)
-        
-        do {
-            try handler.perform([personSegmentationRequest])
-            
-            guard let mask = personSegmentationRequest.results?.first?.pixelBuffer else {
-                return frame
-            }
-
-            let originalCIImage = frame
-            var maskCIImage = CIImage(cvPixelBuffer: mask)
-            
-            maskCIImage = transformMaskToFitOriginal(mask: maskCIImage, originalExtent: originalCIImage.extent)
-            maskCIImage = applyZoomBlur(image: maskCIImage)
-            
-            let compositeImage = compositeMaskAndOriginalImage(mask: maskCIImage, originalImage: originalCIImage)
-
-            return compositeImage
-            
-        } catch {
-            print("Vision request failed: \(error)")
-            return frame
-        }
     }
 }
