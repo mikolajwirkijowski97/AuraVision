@@ -16,36 +16,16 @@ struct SubtractHalf: PostProcessingEffect {
     }
 }
 
-class SubtractHalfFilter: CIFilter
-{
-    
-    static var kernel: CIColorKernel = { () -> CIColorKernel in
-        let url = Bundle.main.url(forResource: "SubtractHalf", withExtension: "ci.metallib")!
-        let data = try! Data(contentsOf: url)
-        
-        do {
-            return try CIColorKernel(functionName: "subtractHalf", fromMetalLibraryData: data)
-        }
-        catch {
-            print("\(error)")
-            fatalError("\(error)")
-        }
-    }()
-    
-    @objc dynamic var inputImage : CIImage?
-    
-    override var outputImage : CIImage!
-    {
-        guard let inputImage = self.inputImage else
-        {
-            return nil
-        }
-        
-        let arguments = [inputImage] as [Any]
-        
-        return Self.kernel.apply(extent: inputImage.extent, arguments: arguments)
+class SubtractHalfFilter: MetalCIFilter {
+
+    init() {
+        super.init(
+            resourceName: "SubtractHalf",
+            functionName: "subtractHalf"
+        )
     }
-    
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
-
-
