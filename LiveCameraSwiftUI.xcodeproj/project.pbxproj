@@ -12,6 +12,39 @@
 		6362F5FE287974D000286B4A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6362F5FD287974D000286B4A /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		F43D11B02E5DC91B00D367B8 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.ci.metal";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			name = "Compile CI Metal Shaders";
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).air",
+			);
+			runOncePerArchitecture = 0;
+			script = "xcrun metal -c $MTL_HEADER_SEARCH_PATHS -fcikernel  \"${INPUT_FILE_PATH}\" -o \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+		};
+		F43D11B12E5DC98000D367B8 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.ci.air";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			name = "Compile air to metallib";
+			outputFiles = (
+				"$(METAL_LIBRARY_OUTPUT_DIR)/$(INPUT_FILE_BASE).metallib",
+			);
+			runOncePerArchitecture = 0;
+			script = "xcrun metallib -cikernel \"${INPUT_FILE_PATH}\" -o \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXFileReference section */
 		6362F5F3287974D000286B4A /* LiveCameraSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiveCameraSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6362F5F6287974D000286B4A /* LiveCameraSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCameraSwiftUIApp.swift; sourceTree = "<group>"; };
@@ -83,6 +116,8 @@
 				6362F5F1287974D000286B4A /* Resources */,
 			);
 			buildRules = (
+				F43D11B12E5DC98000D367B8 /* PBXBuildRule */,
+				F43D11B02E5DC91B00D367B8 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
