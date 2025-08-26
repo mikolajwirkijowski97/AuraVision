@@ -15,7 +15,7 @@ class FrameHandler: NSObject, ObservableObject {
     
     // The pipeline for image post-processing
     lazy var postProcessingPipeline: PostProcessingPipeline = {
-        var effects = [ZoomBlur(intensity: 10)]
+        var effects: [PostProcessingEffect] = [ZoomBlur(intensity: 10), SubtractHalf()]
         
         return PostProcessingPipeline(effects: effects)
     }()
