@@ -1,5 +1,5 @@
 - [x] Segmentation of live video feed using apples "Vision"
-- [ ] Apply Metal shaders to create a godly aura effect based on segmentation result
+- [x] Apply Metal shaders to create a godly aura effect based on segmentation result
 - [ ] Colorise the aura with shaders based on a sentiment check ran every n-frames 
 - [ ] Wrap in a nice ui
 
