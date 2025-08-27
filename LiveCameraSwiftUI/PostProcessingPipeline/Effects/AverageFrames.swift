@@ -16,14 +16,19 @@ class AverageFrames: PostProcessingEffect {
     /// The most recently calculated average image, which represents the running state.
     private var currentAverage: CIImage?
     
+    /// Reusable filter instance to avoid recreating Metal kernels
+    private let filter: AverageFramesFilter
+    
+    private let context = CIContext()
+    
     init(frameCount: Int) {
         self.frameCount = frameCount
         self.frames = []
+        // Create the filter once during initialization
+        self.filter = AverageFramesFilter()
     }
     
     /// Applies the moving average effect to an incoming image.
-    /// This method must be `mutating` as it modifies the struct's internal state
-    /// (`frames` and `currentAverage`).
     func apply(to image: CIImage) -> CIImage {
         if frames.isEmpty {
             frames = Array(repeating: image, count: frameCount)
@@ -32,33 +37,53 @@ class AverageFrames: PostProcessingEffect {
         frames.append(image)
         let oldestImage = frames.removeFirst()
         
-        // Create the custom filter with the images needed for the formula.
-        let filter = AverageFramesFilter(
-            inputImage: image,
-            oldestImage: oldestImage,
-            currentImage: currentAverage ?? image,
-            frameCount: frameCount
-        )
+        // Update the filter's parameters
+        filter.inputImage = image
+        filter.oldestImage = oldestImage
+        filter.currentImage = currentAverage ?? image
+        filter.frameCount = frameCount
         
-        // Apply the filter. The runningAverage from the previous step is passed
-        // as the main input image, which corresponds to `currentPixelColor` in the Metal shader.
         let newAverage = filter.outputImage ?? image
         
-        // Update our state with the new average for the next iteration.
-        self.currentAverage = newAverage
+        let renderedNewAverage = context.createCGImage(newAverage, from: image.extent)!
         
-        return newAverage
+        // Create the new CIImage from the rendered bitmap (its origin is at 0,0)
+        let imageAtOrigin = CIImage(cgImage: renderedNewAverage)
+
+        // Create a transform to move it back to the correct origin of the input image
+        let transform = CGAffineTransform(translationX: image.extent.origin.x, y: image.extent.origin.y)
+
+        // Apply the transform and store the correctly positioned image for the next frame
+        self.currentAverage = imageAtOrigin.transformed(by: transform)
+        
+        return self.currentAverage ?? image
     }
 }
 class AverageFramesFilter: MetalCIFilter {
-
-    init(inputImage: CIImage, oldestImage: CIImage, currentImage: CIImage, frameCount: Int) {
+    
+    /// Dynamic properties that can be updated without recreating the filter
+    @objc dynamic var oldestImage: CIImage?
+    @objc dynamic var currentImage: CIImage?
+    @objc dynamic var frameCount: Int = 0
+    
+    init() {
         super.init(
             resourceName: "AverageFrames",
             functionName: "averageFrames",
-            arguments: [oldestImage, currentImage, frameCount]
+            arguments: []
         )
-        self.inputImage = inputImage
+    }
+    
+    override var outputImage: CIImage? {
+        guard let inputImage = inputImage,
+              let oldestImage = oldestImage,
+              let currentImage = currentImage else {
+            return nil
+        }
+
+        self.arguments = [oldestImage, currentImage, frameCount]
+
+        return super.outputImage
     }
 
     required init?(coder: NSCoder) {

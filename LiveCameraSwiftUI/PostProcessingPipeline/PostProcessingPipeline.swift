@@ -21,7 +21,7 @@ class PostProcessingPipeline {
     }
     
     /// As the whole app is about post processing the segmentation result mask
-    /// this function also performs image segmentation, then applies all effects to its result
+    /// so beware: `this function performs image segmentation`, then applies all effects to its result
     /// and finally combines the two images(image and the processed mask) into a resultImage
     public func apply(to image: CIImage) -> CIImage {
         

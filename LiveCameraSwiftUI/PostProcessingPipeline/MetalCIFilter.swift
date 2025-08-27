@@ -11,13 +11,13 @@ import CoreImage
 class MetalCIFilter: CIFilter {
 
     /// The input image to be processed by the filter.
-    @objc dynamic var inputImage: CIImage?
+    @objc internal dynamic var inputImage: CIImage?
 
     /// The custom Metal kernel that will be applied to the image.
     private let kernel: CIColorKernel
 
     /// An array of additional arguments to be passed to the kernel.
-    private var arguments: [Any]
+    internal var arguments: [Any]
 
     /// Initializes a new filter with a specified Metal kernel and arguments.
     init(resourceName: String, functionName: String, arguments: [Any] = []) {
