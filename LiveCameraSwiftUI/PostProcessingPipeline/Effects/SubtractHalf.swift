@@ -21,7 +21,7 @@ class SubtractHalfFilter: MetalCIFilter {
     init() {
         super.init(
             resourceName: "SubtractHalf",
-            functionName: "subtractHalf"
+            functionName: "subtractHalf",
         )
     }
 
