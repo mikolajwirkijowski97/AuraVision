@@ -3,6 +3,8 @@
 - [ ] Colorise the aura with shaders based on a sentiment check ran every n-frames 
 - [ ] Wrap in a nice ui
 
+Basically an **ML + Shaders** programming art project that has one goal - Look really damn nice, while being performant enough to run in "real-time" on any modern iOS device.
+
 The project was initially based on this to skip through the boilerplate part:
 # Live Camera SwiftUI
 
