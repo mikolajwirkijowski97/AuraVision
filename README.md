@@ -1,7 +1,9 @@
 - [x] Segmentation of live video feed using apples "Vision"
 - [ ] Apply Metal shaders to create a godly aura effect based on segmentation result
-- [ ] Colorise the aura with shaders based on a sentiment check ran every n-frames 
+- [ ] Colorise the aura with shaders based on ~~a sentiment check ran every n-frames~~ a fast encoder-decoder network (very compressed latent space used as RGB is the current idea). 
 - [ ] Wrap in a nice ui
+
+Basically an **ML + Shaders** programming art project that has one goal - Look really damn nice, while being performant enough to run in "real-time" on any modern iOS device.
 
 The project was initially based on this to skip through the boilerplate part:
 # Live Camera SwiftUI
