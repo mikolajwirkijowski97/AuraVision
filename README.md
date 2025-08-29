@@ -1,7 +1,9 @@
 - [x] Segmentation of live video feed using apples "Vision"
-- [x] Apply Metal shaders to create a godly aura effect based on segmentation result
-- [ ] Colorise the aura with shaders based on a sentiment check ran every n-frames 
-- [ ] Wrap in a nice ui
+- [x] Create rudimental Metal shaders to create a godly aura effect based on segmentation result
+- [ ] Create a wavey effect based on signed distance fields.
+- [ ] Colorise the aura with shaders based on something that will give "mysterious" results -- probably some kind of a lightweight encoder-decoder network, and just use the latent space for RGB.
+- [ ] Optimize if needed.
+- [ ] Wrap in a nice ui.
 
 Basically an **ML + Shaders** programming art project that has one goal - Look really damn nice, while being performant enough to run in "real-time" on any modern iOS device.
 
