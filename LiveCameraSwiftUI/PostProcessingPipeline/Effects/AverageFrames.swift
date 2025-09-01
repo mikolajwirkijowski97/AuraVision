@@ -10,9 +10,6 @@ class AverageFrames: PostProcessingEffect {
     /// The number of frames to average over.
     let frameCount: Int
     
-    /// A buffer to store the history of recent frames.
-    private var frames: [CIImage]
-    
     /// The most recently calculated average image, which represents the running state.
     private var currentAverage: CIImage?
     
@@ -23,23 +20,15 @@ class AverageFrames: PostProcessingEffect {
     
     init(frameCount: Int) {
         self.frameCount = frameCount
-        self.frames = []
         // Create the filter once during initialization
         self.filter = AverageFramesFilter()
     }
     
     /// Applies the moving average effect to an incoming image.
     func apply(to image: CIImage) -> CIImage {
-        if frames.isEmpty {
-            frames = Array(repeating: image, count: frameCount)
-        }
-
-        frames.append(image)
-        let oldestImage = frames.removeFirst()
         
         // Update the filter's parameters
         filter.inputImage = image
-        filter.oldestImage = oldestImage
         filter.currentImage = currentAverage ?? image
         filter.frameCount = frameCount
         
@@ -76,12 +65,11 @@ class AverageFramesFilter: MetalCIFilter {
     
     override var outputImage: CIImage? {
         guard let inputImage = inputImage,
-              let oldestImage = oldestImage,
               let currentImage = currentImage else {
             return nil
         }
 
-        self.arguments = [oldestImage, currentImage, frameCount]
+        self.arguments = [currentImage, Float(frameCount)]
 
         return super.outputImage
     }
