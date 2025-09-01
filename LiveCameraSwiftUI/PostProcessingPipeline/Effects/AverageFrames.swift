@@ -34,6 +34,7 @@ class AverageFrames: PostProcessingEffect {
         
         let newAverage = filter.outputImage ?? image
         
+        // TODO: Make this an MTLTexture with a linear colorspace in the future, might improve performance.
         let renderedNewAverage = context.createCGImage(newAverage, from: image.extent)!
         
         // Create the new CIImage from the rendered bitmap (its origin is at 0,0)
