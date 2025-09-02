@@ -6,8 +6,8 @@
 //
 
 #include <metal_stdlib>
-using namespace metal;
 #include <CoreImage/CoreImage.h>
+using namespace metal;
 
 extern "C" float4 subtractHalf(coreimage::sample_t pixelColor, coreimage::destination destination)
 {

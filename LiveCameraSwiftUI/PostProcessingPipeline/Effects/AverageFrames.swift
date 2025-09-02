@@ -51,7 +51,6 @@ class AverageFrames: PostProcessingEffect {
 }
 class AverageFramesFilter: MetalCIFilter {
     
-    /// Dynamic properties that can be updated without recreating the filter
     @objc dynamic var oldestImage: CIImage?
     @objc dynamic var currentImage: CIImage?
     @objc dynamic var frameCount: Int = 0

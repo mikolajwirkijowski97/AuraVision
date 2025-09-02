@@ -5,8 +5,8 @@
 //  Created by Mikołaj Wirkijowski on 26/08/2025.
 //
 #include <metal_stdlib>
-using namespace metal;
 #include <CoreImage/CoreImage.h>
+using namespace metal;
 
 extern "C" float4 averageFrames(coreimage::sample_t newPixelColor, coreimage::sample_t currentPixelColor, float frameCount, coreimage::destination destination)
 {

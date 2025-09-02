@@ -14,7 +14,7 @@ class MetalCIFilter: CIFilter {
     @objc internal dynamic var inputImage: CIImage?
 
     /// The custom Metal kernel that will be applied to the image.
-    private let kernel: CIColorKernel
+    private let kernel: CIKernel
 
     /// An array of additional arguments to be passed to the kernel.
     internal var arguments: [Any]
@@ -26,7 +26,7 @@ class MetalCIFilter: CIFilter {
             fatalError("Unable to load Metal library: \(resourceName).ci.metallib")
         }
 
-        guard let metalKernel = try? CIColorKernel(functionName: functionName, fromMetalLibraryData: data) else {
+        guard let metalKernel = try? CIKernel(functionName: functionName, fromMetalLibraryData: data) else {
             fatalError("Unable to create CIColorKernel with function name: \(functionName)")
         }
 
@@ -49,6 +49,9 @@ class MetalCIFilter: CIFilter {
 
         return kernel.apply(
             extent: inputImage.extent,
+            roiCallback: { _, _ in
+                return inputImage.extent
+            },
             arguments: finalArguments
         )
     }
