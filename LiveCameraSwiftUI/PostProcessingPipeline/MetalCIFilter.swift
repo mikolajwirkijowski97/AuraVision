@@ -7,14 +7,14 @@
 
 import CoreImage
 
-/// A generalized CIFilter subclass for applying custom Metal CIColorKernels.
+//// A generalized CIFilter subclass for applying custom Metal CIKernels (supports ColorKernels and general kernels).
 class MetalCIFilter: CIFilter {
 
     /// The input image to be processed by the filter.
     @objc internal dynamic var inputImage: CIImage?
 
     /// The custom Metal kernel that will be applied to the image.
-    private let kernel: CIColorKernel
+    private let kernel: CIKernel
 
     /// An array of additional arguments to be passed to the kernel.
     internal var arguments: [Any]
@@ -26,8 +26,8 @@ class MetalCIFilter: CIFilter {
             fatalError("Unable to load Metal library: \(resourceName).ci.metallib")
         }
 
-        guard let metalKernel = try? CIColorKernel(functionName: functionName, fromMetalLibraryData: data) else {
-            fatalError("Unable to create CIColorKernel with function name: \(functionName)")
+        guard let metalKernel = try? CIKernel(functionName: functionName, fromMetalLibraryData: data) else {
+            fatalError("Unable to create CIKernel with function name: \(functionName)")
         }
 
         self.kernel = metalKernel
@@ -49,6 +49,12 @@ class MetalCIFilter: CIFilter {
 
         return kernel.apply(
             extent: inputImage.extent,
+            roiCallback: { (index, destRect) in
+                // Conservative ROI: require the full input extent for any sampler argument.
+                // This is safe for kernels that may sample neighbors (e.g., JFA). If performance becomes an issue,
+                // specialize ROI per-kernel to expand by the needed radius instead.
+                return inputImage.extent
+            },
             arguments: finalArguments
         )
     }

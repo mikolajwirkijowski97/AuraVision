@@ -15,8 +15,8 @@ class FrameHandler: NSObject, ObservableObject {
     
     // The pipeline for image post-processing
     lazy var postProcessingPipeline: PostProcessingPipeline = {
-        var effects: [PostProcessingEffect] = [ZoomBlur(intensity: 10), SubtractHalf(), AverageFrames(frameCount: 10)]
-        
+        // Use JFA-based unsigned distance map for the segmentation mask
+        var effects: [PostProcessingEffect] = [JFADistance(threshold: 0.2)]
         return PostProcessingPipeline(effects: effects)
     }()
     
