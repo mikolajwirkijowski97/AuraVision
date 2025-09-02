@@ -42,7 +42,9 @@ struct JfaDistanceFieldEffect: PostProcessingEffect {
         // STAGE 3: Decode the final JFA data into a visible grayscale distance map.
         let decodeFilter = JfaDecodeFilter()
         decodeFilter.inputImage = jfaPassImage
-        decodeFilter.normalizationFactor = self.normalizationFactor
+        let size = jfaPassImage.extent.size
+        let diag = Float(hypot(size.width, size.height))
+        decodeFilter.normalizationFactor = diag
         
         return decodeFilter.outputImage ?? jfaPassImage
     }
@@ -53,11 +55,20 @@ struct JfaDistanceFieldEffect: PostProcessingEffect {
 /// A filter that creates the initial seed map from a mask.
 private class JfaSeedFilter: MetalCIFilter {
     init() {
-        super.init(resourceName: "JFA", functionName: "jfaSeedKernel")
+        // We'll supply the image size at render time via `outputImage` so start with empty args.
+        super.init(resourceName: "JFA", functionName: "jfaSeedKernel", arguments: [])
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override var outputImage: CIImage? {
+        guard let inputImage = inputImage else { return nil }
+        let size = inputImage.extent.size
+        // Pass imageSize as a CIVector (maps to float2 in the Metal kernel).
+        self.arguments = [CIVector(x: size.width, y: size.height)]
+        return super.outputImage
     }
 }
 
@@ -75,8 +86,10 @@ private class JfaStepFilter: MetalCIFilter {
     }
 
     override var outputImage: CIImage? {
-        // Set the kernel argument just before applying the filter.
-        self.arguments = [jfaLevel]
+        guard let inputImage = inputImage else { return nil }
+        let size = inputImage.extent.size
+        // Pass jfaLevel then imageSize (as CIVector) matching the Metal signature.
+        self.arguments = [jfaLevel, CIVector(x: size.width, y: size.height)]
         return super.outputImage
     }
 }
@@ -94,7 +107,10 @@ private class JfaDecodeFilter: MetalCIFilter {
     }
 
     override var outputImage: CIImage? {
-        self.arguments = [normalizationFactor]
+        guard let inputImage = inputImage else { return nil }
+        let size = inputImage.extent.size
+        // Pass normalizationFactor then imageSize to match Metal kernel signature.
+        self.arguments = [normalizationFactor, CIVector(x: size.width, y: size.height)]
         return super.outputImage
     }
 }
